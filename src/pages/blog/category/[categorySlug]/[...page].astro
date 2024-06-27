@@ -1,0 +1,65 @@
+---
+import Card from "@components/Card.astro";
+import Pagination from "@components/pagination.astro";
+import Layout from "@layouts/Layout.astro";
+
+import { categories } from "@lib/constants";
+
+import { getCollection } from "astro:content";
+import type { GetStaticPaths } from "astro";
+
+import { compareDesc } from "date-fns";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  //全ての記事を取得
+  const blogPosts = await getCollection("blog");
+
+  //日付順にソート
+  const sortedBlogPosts = blogPosts.sort((a, b) =>
+    compareDesc(a.data.pubDate, b.data.pubDate),
+  );
+
+  //url(slug)のカテゴリ文字列でフィルタリング
+  return categories.flatMap((category) => {
+    const { categorySlug, categoryName } = category;
+
+    const filteredPosts = sortedBlogPosts.filter((post) => {
+      return post.data.category.includes(categorySlug);
+    });
+
+    return paginate(filteredPosts, {
+      params: { categorySlug: categorySlug }, //urlに使用
+      props: { categoryName: categoryName }, //ページに渡すカテゴリ名
+      pageSize: 6,
+    });
+  });
+}) satisfies GetStaticPaths;
+
+// const { pageNum } = Astro.props;
+const {
+  page: {
+    data,
+    url: { prev, next },
+  },
+  categoryName,
+} = Astro.props;
+---
+
+<Layout pageTitle={categoryName} description={categoryName}>
+  <h1>{categoryName}</h1>
+
+  <div class="grid">
+    {
+      data.map((post) => {
+        const {
+          slug,
+          data: { image, title },
+        } = post;
+
+        return <Card url={`/blog/${slug}`} src={image} title={title} />;
+      })
+    }
+
+    <Pagination prev={prev} next={next} />
+  </div>
+</Layout>

@@ -13,8 +13,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 205%; /* 必要に応じて追加 */
     flex-wrap: wrap;
     gap: 1em;
+  }
+  .flex-spacebetween > :first-child {
+    margin-right: auto;
   }
   .flex-spacebetween > :last-child {
     margin-left: auto;
@@ -83,7 +87,7 @@
 
   /* メインコンテンツ */
   main {
-    min-height: 78vh;
+    min-height: 80vh;
     display: flex;
     flex-direction: column;
     justify-content: center;

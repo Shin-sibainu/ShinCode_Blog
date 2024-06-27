@@ -1,0 +1,59 @@
+---
+import Card from "@components/Card.astro";
+import Pagination from "@components/pagination.astro";
+import Layout from "@layouts/Layout.astro";
+import type { GetStaticPaths } from "astro";
+
+import { getCollection } from "astro:content";
+import { compareDesc } from "date-fns";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  //   return [
+  //     {
+  //       params: { page: 1 },
+  //       props: { pageNum: "1ページ" },
+  //     },
+  //     {
+  //       params: { page: 2 },
+  //       props: { pageNum: "2ページ" },
+  //     },
+  //     {
+  //       params: { page: 3 },
+  //       props: { pageNum: "3ページ" },
+  //     },
+  //   ];
+  const blogPosts = await getCollection("blog");
+  const sortedBlogPosts = blogPosts.sort((a, b) =>
+    compareDesc(a.data.pubDate, b.data.pubDate),
+  );
+
+  return paginate(sortedBlogPosts, { pageSize: 6 });
+}) satisfies GetStaticPaths;
+
+// const { pageNum } = Astro.props;
+const {
+  page: {
+    data,
+    url: { prev, next },
+  },
+} = Astro.props;
+---
+
+<Layout pageTitle="ShinCode Blog" description="ブログ記事一覧">
+  <h1>ShinCode Blog</h1>
+
+  <div class="grid">
+    {
+      data.map((post) => {
+        const {
+          slug,
+          data: { image, title },
+        } = post;
+
+        return <Card url={`/blog/${slug}`} src={image} title={title} />;
+      })
+    }
+
+    <Pagination prev={prev} next={next} />
+  </div>
+</Layout>
